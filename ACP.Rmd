@@ -1,5 +1,5 @@
 ---
-title: "ACP"
+title: "ACP_Maladie"
 author: "Moussa"
 date: "2024-08-18"
 output: html_document
@@ -8,9 +8,77 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+###### Import de la base de données ( Maladie ) dans R 
 ```{r}
 library(readxl)
 Maladie <- read_excel("C:/Users/sisso/Downloads/Maladie.xls")
-str(Maladie)
+
 ```
+###### La fonction STR nous permet de voir le nombre d'observation et de variable ou le type de variable dans le jeu de données #######
+```{r}
+str(Maladie)
+Maladie$Genre <- as.factor(Maladie$Genre)
+Maladie$Pas_Tabac <- as.factor(Maladie$Pas_Tabac)
+Maladie$Arret_Tabac <- as.factor(Maladie$Arret_Tabac)
+Maladie$Fume_Tabac <- as.factor(Maladie$Fume_Tabac)
+Maladie$Sport <- as.factor(Maladie$Sport)
+Maladie$Pas_Alcool <- as.factor(Maladie$Pas_Alcool)
+Maladie$Alcool_occa <- as.factor(Maladie$Alcool_occa)
+Maladie$Alcool_reg <- as.factor(Maladie$Alcool_reg)
+```
+
+#####   Les statistiques descriptives ############################################
+```{r}
+summary(Maladie)
+```
+###### L'Age Moyen de malade selon le Genre ou Fume_tabac ######
+
+```{r}
+aggregate(Age~Genre, data = Maladie, FUN = mean)
+aggregate(Age~Fume_Tabac,data = Maladie,FUN = mean)
+```
+### ACP via FactomineR ###
+
+```{r}
+
+# Sélectionner les variables quantitatives pour l'ACP
+quant_vars <- Maladie[, c("Mesure", "Age", "Taille", "Poids")]
+
+# Identifier les colonnes des variables qualitatives pour les inclure comme variables supplémentaires
+quali_vars <- c("Genre", "Pas_Tabac", "Arret_Tabac", "Fume_Tabac", "Sport", "Pas_Alcool", "Alcool_occa", "Alcool_reg")
+
+```
+```{r}
+# Charger la bibliothèque FactoMineR
+library(FactoMineR)
+```
+```{r}
+# Convertir les variables qualitatives en facteurs
+quali_vars <- c("Genre", "Pas_Tabac", "Arret_Tabac", "Fume_Tabac", "Sport", "Pas_Alcool", "Alcool_occa", "Alcool_reg")
+```
+```{r}
+Maladie[quali_vars] <- lapply(Maladie[quali_vars], as.factor)
+```
+
+```{r}
+# Définir les variables quantitatives
+quant_vars <- setdiff(names(Maladie), quali_vars)  # Toutes les variables sauf les qualitatives
+```
+
+```{r}
+# Effectuer l'ACP
+# Les variables qualitatives doivent être spécifiées comme variables illustratives avec `quali.sup`
+PCA_results <- PCA(Maladie[, quant_vars], quali.sup = which(names(Maladie) %in% quali_vars), graph = TRUE)
+```
+
+```{r}
+
+# Vérifier les résultats de l'ACP
+print(PCA_results)
+
+```
+
+
+
 

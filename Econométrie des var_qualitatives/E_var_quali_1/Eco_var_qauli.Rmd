@@ -1,0 +1,162 @@
+---
+title: "Econométrie_var_quali"
+author: "Moussa"
+date: "2024-09-02"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Charger les données 
+
+```{r}
+library(readr)
+Essence <- read_delim("Econométrie des var_qualitatives/Dataset/R2.csv", 
+    delim = ";", escape_double = FALSE, trim_ws = TRUE)
+
+```
+
+
+# Statistiques descriptives
+```{r}
+summary(Essence)
+```
+
+```{r}
+str(Essence)
+```
+
+# Créer la variable de consommation d'essence par tête
+
+```{r}
+Essence$GPOP <- Essence$G / Essence$POP
+
+# Créer les variables en logarithme
+Essence$LOGGPOP <- log(Essence$GPOP)
+Essence$LOGPG <- log(Essence$PG)
+Essence$LOGY <- log(Essence$Y)
+Essence$LOGPNC <- log(Essence$PNC)
+Essence$LOGPPUC <- log(Essence$PUC)
+
+# Afficher les premières lignes du dataframe mis à jour
+head(Essence)
+
+```
+# 5. Quelle est la moyenne de l'indice des prix des nouvelles voitures? La médiane de l'indice des prix des voitures d'occasion? La variance de la consommation par tête. 
+
+```{r}
+moyenne_pnc <- mean(Essence$PNC, na.rm = TRUE)
+print(paste("Moyenne de l'indice des prix des nouvelles voitures :", round(moyenne_pnc,2)))
+# Médiane de l'indice des prix des voitures d'occasion (PUC)
+mediane_puc <- median(Essence$PUC, na.rm = TRUE)
+print(paste("Médiane de l'indice des prix des voitures d'occasion:", round(mediane_puc, 2)))
+
+# Variance de la consommation par tête (GPOP)
+variance_gpop <- var(Essence$GPOP, na.rm = TRUE)
+print(paste("Variance de la consommation par tête:", round(variance_gpop, 2)))
+
+# Statistiques descriptives supplémentaires
+summary(Essence[, c("PNC", "PUC", "GPOP")])
+```
+# 6. Effectuez une régression simple dont les résultats seront stockés dans regtotal, avec pour endogène LOGGPOP et pour exogène LOGY. Interprétez les résultats. Créez l'objet droitegpopy qui correspond aux valeurs prédites 𝐿𝑂𝐺𝐺𝑃𝑂𝑃 ̂ de la régression. (En reprenant manuellement les coefficients de la régression). Affichez la droite de régression sur le nuage de points.
+```{r}
+regtotal=lm(LOGGPOP~LOGY, data = Essence)
+summary(regtotal)
+sum(regtotal$residuals)
+deviance(regtotal)
+```
+# Une regression linéaire uniquement pour les hommes
+```{r}
+regtotal_Masculin=lm(LOGGPOP~LOGY, Gender=="M", data = Essence)
+summary(regtotal_Masculin)
+```
+
+# On constate que le LOGY est significatif au seuil de 5 % voire 10 % : alors de ce fait on réjette l'hypothèse nullité de var explicatives. 
+- On constate aussi que le R² est de 65% cad le modèle explique 65% de notre variance (information ) totale.
+
+# Créer l'objet droitegpopy avec les valeurs prédites 
+
+```{r}
+
+coefficients <- coef(regtotal)
+Essence$droitegpopy <- coefficients[1] + coefficients[2] * Essence$LOGY
+
+```
+
+# Créer le nuage de points avec la droite de régression
+
+```{r}
+plot(Essence$LOGY, Essence$LOGGPOP, 
+     main = " Effet du revenu sur la consommaton d'essence",
+     xlab = "Log du revenu (LOGY)", 
+     ylab = "Log de la consommation d'essence par tête (LOGGPOP)")
+abline(regtotal, col = "red")
+```
+# 7. Effectuez la même régression sur la période 1960-1975 (observations de 1 à 16). Stockez les résultats dans 
+reg1. Faites de même sur la période 1976-1995 et stockez les résultats dans reg2. Affichez les droites de 
+régression correspondantes sur le graphique précédent. Que constatez-vous? Quel test(s) serai(en)t alors 
+approprié(s)?
+
+
+```{r}
+# Régression pour la période 1960-1975
+reg1 <- lm(LOGGPOP ~ LOGY, data = Essence[1:16,])
+summary(reg1)
+
+reg2 <- lm(LOGGPOP ~ LOGY, data = Essence[17:36,])
+summary(reg2)
+
+```
+
+
+# Créer le graphique
+```{r}
+plot(Essence$LOGY, Essence$LOGGPOP, 
+     main = "Régression de LOGGPOP sur LOGY pour différentes périodes",
+     xlab = "Log du revenu (LOGY)", 
+     ylab = "Log de la consommation d'essence par tête (LOGGPOP)")
+# Ajouter les droites de régression
+abline(regtotal, col = "black", lwd = 2)
+abline(reg1, col = "red", lwd = 2)
+abline(reg2, col = "blue", lwd = 2)
+# Au lieu de prendre toutes les droites ....
+```
+# 8. Estimez les modèles suivants :
+Modèle 1 : log (
+𝐺
+𝑃𝑜𝑝) = 𝛽1 + 𝛽2
+. log(𝑌) + 𝛽3
+. log(𝑃𝐺) + 𝜀
+Modèle 2 : log (
+𝐺
+𝑃𝑜𝑝) = 𝛽1 + 𝛽2
+. log(𝑌) + 𝛽3
+. log(𝑃𝐺) + 𝛽4
+. log(𝑃𝑛𝐶) + 𝜀
+Modèle 3 : log (
+𝐺
+𝑃𝑜𝑝) = 𝛽1 + 𝛽2
+. log(𝑌) + 𝛽3
+. log(𝑃𝐺) + 𝛽4
+. log(𝑃𝑛𝐶) + 𝛽5
+. log(𝑃𝑢𝐶) + �
+
+```{r}
+# Modèle 1
+modele1 <- lm(LOGGPOP ~ LOGY + LOGPG, data = Essence)
+summary(modele1)
+
+# Modèle 2
+modele2 <- lm(LOGGPOP ~ LOGY + LOGPG + LOGPNC, data = Essence)
+summary(modele2)
+
+# Modèle 3
+modele3 <- lm(LOGGPOP ~ LOGY + LOGPG + LOGPNC + LOGPUC, data = Essence)
+summary(modele3)
+
+
+
+
+```

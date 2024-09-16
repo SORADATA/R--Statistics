@@ -1,0 +1,58 @@
+---
+title: "Eco_var_quali"
+author: "Moussa"
+date: "2024-09-02"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(readr)
+Essence <- read_delim("Econométrie des var_qualitatives/Dataset/R2.csv", 
+    delim = ";", escape_double = FALSE, trim_ws = TRUE)
+
+```
+
+
+##### Statistiques descriptives ######################################
+```{r}
+summary(Essence)
+```
+```{r}
+str(Essence)
+``
+`
+```{r}
+Essence$<- Essence$G/ Essence$GPOP
+
+# Créer la variable de consommation d'essence par tête
+essence$GPOP <- essence$G / essence$Pop
+
+# Créer les variables en logarithme
+essence$LOGGPOP <- log(essence$GPOP)
+essence$LOGPG <- log(essence$PG)
+essence$LOGY <- log(essence$Y)
+essence$LOGPNC <- log(essence$PnC)
+essence$LOGPUC <- log(essence$PuC)
+
+```
+
+#### 4. Créez la variable GPOP de consommation d'essence par tête. Créez des variables en logarithme LOGGPOP, LOGPG, LOGY, LOGPNC et LOGPPUC. Il faut que ces variables soient attachées à la base de données essence.##
+```{r}
+GPOP =Essence$G/Essence$POP
+Essence$GPOP=Essence$G/Essence$POP
+Essence$LOGGPOP= log(Essence$GPOP)
+Essence$LOGGPG= log(Essence$PG)
+Essence$LOGY= log(Essence$Y)
+Essence$LOGGPNC= log(Essence$PNC)
+Essence$LOGPPUC= log(Essence$PPUC)
+```
+##### 5. Quelle est la moyenne de l'indice des prix des nouvelles voitures? La médiane de l'indice des prix des voitures d'occasion? La variance de la consommation par tête?  #####
+
+```{r}
+summary(Essence$GPOP)
+```
+

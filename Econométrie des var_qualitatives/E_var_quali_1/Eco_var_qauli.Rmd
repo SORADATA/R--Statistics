@@ -16,8 +16,17 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(readr)
+<<<<<<< Updated upstream
 Essence <- read_delim("Econométrie des var_qualitatives/Dataset/R2.csv", 
     delim = ";", escape_double = FALSE, trim_ws = TRUE)
+=======
+
+Essence <- read.csv("C:/Users/sisso/OneDrive/Documents/GitHub/SORADATA/ACP-R/ACP_University/Econométrie_var_qualitatives/Econométrie des var_qualitatives/Dataset/R2.csv", 
+                    sep = ";", stringsAsFactors = TRUE)
+
+
+
+>>>>>>> Stashed changes
 ```
 
 
@@ -155,11 +164,41 @@ modele2 <- lm(LOGGPOP ~ LOGY + LOGPG + LOGPNC, data = Essence)
 summary(modele2)
 
 # Modèle 3
-modele3 <- lm(LOGGPOP ~ LOGY + LOGPG + LOGPNC + LOGPUC, data = Essence)
-summary(modele3)
+#modele3 <- lm(LOGGPOP ~ LOGY + LOGPG + LOGPNC + LOGPUC, data = Essence)
+#summary(modele3)
 
 
 
 
 ```
+<<<<<<< Updated upstream
+=======
+```{r}
+#install.packages("Epi", type="binary")
+```
+#9.Bonus :  reprenons la base de donnée totale : influent sur la taille moyenne en France 
+
+```{r}
+#Modeletaille <- lm(`TM France` ~ Gender + `Glorious?`, data = Essence)
+#summary(Modeletaille)
+
+
+```
+```{r}
+#Modeletaille2 <- lm(`TM France` ~ Gender + `Glorious?`+ Gender*`Glorious?`, data = Essence)
+#summary(Modeletaille2)
+
+```
+# Autre façon 
+```{r}
+
+```
+
+```{r}
+#((deviance(modele2)-(deviance(modele21)+deviance(modele22)))/4)/((deviance(modele21)+deviance(modele22))/28) #4 paramètres : LOGY,LOGPG,LOGPNC,constante(epsilon)
+#28 c'est : 16+20-2*4(paramètres)
+```
+
+
+>>>>>>> Stashed changes
 

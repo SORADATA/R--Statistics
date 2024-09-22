@@ -1,0 +1,21 @@
+## Modèle Logit (Régression Logistique)
+
+Le modèle logit, également connu sous le nom de régression logistique, est une méthode statistique utilisée pour prédire une variable dépendante binaire à partir d'un ensemble de variables explicatives. 
+
+### Caractéristiques principales :
+
+1. **Variable dépendante binaire** : Le modèle prédit la probabilité d'appartenance à l'une des deux catégories (0 ou 1).
+
+2. **Fonction logistique** : Utilise la fonction logistique (sigmoïde) pour transformer les prédictions linéaires en probabilités comprises entre 0 et 1.
+
+3. **Interprétation des coefficients** : Les coefficients représentent le changement dans le log-odds de la variable dépendante pour une unité de changement dans la variable explicative.
+
+4. **Odds ratios** : Permettent une interprétation plus intuitive des effets des variables explicatives.
+
+5. **Maximum de vraisemblance** : La méthode d'estimation des paramètres utilisée est le maximum de vraisemblance.
+
+6. **Non-linéarité** : Capture les relations non linéaires entre les variables explicatives et la probabilité de l'événement.
+
+7. **Hypothèses** : Ne nécessite pas d'hypothèse de normalité des variables explicatives, contrairement à la régression linéaire.
+
+Le modèle logit est largement utilisé dans divers domaines, notamment en médecine, en marketing, en finance et en sciences sociales, pour des tâches de classification binaire et d'analyse des facteurs influençant un résultat dichotomique.

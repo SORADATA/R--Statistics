@@ -1,48 +1,21 @@
+## Modèle Logit (Régression Logistique)
 
-# Régression logistique pour prédire [insérer l'objectif]
+Le modèle logit, également connu sous le nom de régression logistique, est une méthode statistique utilisée pour prédire une variable dépendante binaire à partir d'un ensemble de variables explicatives. 
 
-Ce projet implémente un modèle de régression logistique pour prédire [insérer l'objectif] à partir de [insérer les données utilisées].
+### Caractéristiques principales :
 
-## Objectif
+1. **Variable dépendante binaire** : Le modèle prédit la probabilité d'appartenance à l'une des deux catégories (0 ou 1).
 
-L'objectif de ce projet est de développer un modèle de régression logistique capable de prédire [insérer l'objectif] avec précision. Le modèle utilise [insérer les principales variables explicatives] comme variables d'entrée pour faire ses prédictions.
+2. **Fonction logistique** : Utilise la fonction logistique (sigmoïde) pour transformer les prédictions linéaires en probabilités comprises entre 0 et 1.
 
-## Données
+3. **Interprétation des coefficients** : Les coefficients représentent le changement dans le log-odds de la variable dépendante pour une unité de changement dans la variable explicative.
 
-Les données utilisées proviennent de [insérer la source]. Elles contiennent [insérer le nombre] observations et [insérer le nombre] variables. La variable cible est [insérer la variable cible].
+4. **Odds ratios** : Permettent une interprétation plus intuitive des effets des variables explicatives.
 
-## Méthodologie
+5. **Maximum de vraisemblance** : La méthode d'estimation des paramètres utilisée est le maximum de vraisemblance.
 
-1. Nettoyage et préparation des données
-2. Analyse exploratoire  
-3. Sélection des variables
-4. Entraînement du modèle de régression logistique
-5. Évaluation des performances (précision, AUC, etc.)
-6. Optimisation des hyperparamètres
-7. Validation croisée
+6. **Non-linéarité** : Capture les relations non linéaires entre les variables explicatives et la probabilité de l'événement.
 
-## Structure du projet
+7. **Hypothèses** : Ne nécessite pas d'hypothèse de normalité des variables explicatives, contrairement à la régression linéaire.
 
-- `data/` : Données brutes et nettoyées
-- `notebooks/` : Notebooks Jupyter pour l'analyse exploratoire
-- `src/` : Scripts Python pour le prétraitement et le modèle  
-- `models/` : Modèles entraînés sauvegardés
-- `results/` : Résultats et visualisations
-
-## Utilisation
-
-1. Cloner le dépôt
-2. Installer les dépendances : `pip install -r requirements.txt`
-3. Exécuter le notebook principal : `jupyter notebook main.ipynb`
-
-## Résultats
-
-Le modèle final atteint une précision de [XX%] sur l'ensemble de test. Les variables les plus importantes sont [insérer les top variables].
-
-## Auteurs
-
-- [Votre nom]
-
-## Licence
-
-Ce projet est sous licence [insérer la licence].
+Le modèle logit est largement utilisé dans divers domaines, notamment en médecine, en marketing, en finance et en sciences sociales, pour des tâches de classification binaire et d'analyse des facteurs influençant un résultat dichotomique.

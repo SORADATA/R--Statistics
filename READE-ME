@@ -1,0 +1,48 @@
+
+# Régression logistique pour prédire [insérer l'objectif]
+
+Ce projet implémente un modèle de régression logistique pour prédire [insérer l'objectif] à partir de [insérer les données utilisées].
+
+## Objectif
+
+L'objectif de ce projet est de développer un modèle de régression logistique capable de prédire [insérer l'objectif] avec précision. Le modèle utilise [insérer les principales variables explicatives] comme variables d'entrée pour faire ses prédictions.
+
+## Données
+
+Les données utilisées proviennent de [insérer la source]. Elles contiennent [insérer le nombre] observations et [insérer le nombre] variables. La variable cible est [insérer la variable cible].
+
+## Méthodologie
+
+1. Nettoyage et préparation des données
+2. Analyse exploratoire  
+3. Sélection des variables
+4. Entraînement du modèle de régression logistique
+5. Évaluation des performances (précision, AUC, etc.)
+6. Optimisation des hyperparamètres
+7. Validation croisée
+
+## Structure du projet
+
+- `data/` : Données brutes et nettoyées
+- `notebooks/` : Notebooks Jupyter pour l'analyse exploratoire
+- `src/` : Scripts Python pour le prétraitement et le modèle  
+- `models/` : Modèles entraînés sauvegardés
+- `results/` : Résultats et visualisations
+
+## Utilisation
+
+1. Cloner le dépôt
+2. Installer les dépendances : `pip install -r requirements.txt`
+3. Exécuter le notebook principal : `jupyter notebook main.ipynb`
+
+## Résultats
+
+Le modèle final atteint une précision de [XX%] sur l'ensemble de test. Les variables les plus importantes sont [insérer les top variables].
+
+## Auteurs
+
+- [Votre nom]
+
+## Licence
+
+Ce projet est sous licence [insérer la licence].

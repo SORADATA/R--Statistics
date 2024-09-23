@@ -1,0 +1,113 @@
+---
+title: "Logit_Princeton"
+author: "Moussa"
+date: "2024-09-23"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#Question 1
+
+install.packages("foreign",type="binary")
+library(foreign)
+mydata=read.dta("https://dss.princeton.edu/training/Panel101.dta")
+
+  
+#Exporter des données sur mon PC
+
+write.table(mydata, file="mydata.csv", sep=";")
+#Résultat de l'université de Princeton chaque année
+```
+
+```{r}
+#Question 2  
+
+reg=lm(x3~x1+x2, data=mydata)
+summary(reg)
+
+
+#Question bonus, x2 en interaction avec opinion :
+reg2=lm(x3~x2*opinion, mydata)
+summary(reg2)
+#Lorsque x2 augmente de 1, x3 baisse de 0.3 (lorsque l'étudiant est strictement d'accord avec la politique de la fac)
+
+```
+
+
+```{r}
+logit=glm (y_bin~x1+x2+x3, family=binomial(link="logit"),data=mydata)
+summary(logit)
+
+#La colonne estimation affiche les coefficients sous forme de log-odds
+#Lorsque x3 augmente d'une unité, le changement attendu dans le log-odds (log chance) est de 0.75
+#Ce que l'on obtient de cette colonne est de savoir si l'effet des prédicteur est positif ou négatif. Il faut attendre la suite.
+
+
+install.packages("stargazer")
+library(stargazer)
+stargazer(logit, type="html", out="logitM1.htm")
+
+```
+
+
+```{r}
+
+#Question 5
+
+x1=mean(mydata$x1)
+x2=mean(mydata$x2)
+x3=mean(mydata$x3)
+x1
+#Score moyen en math
+x2
+#Score moyen en littérature
+x3
+#Score moyen en sciences
+
+allmean=list(x1,x2,x3)
+allmean
+
+allmean$pred.prob=predict(logit, newdata=allmean, type="response")
+allmean
+
+#Lorsque toutes les valeurs de prédicteur sont maintenues à leurs moyennes,
+#la proba de y=1 est de 83%
+```
+
+
+
+```{r}
+#Question 6
+
+
+model_4 <- glm(y_bin ~ x1 + x2 + x3 + opinion, family = binomial(link = "logit"), data = mydata)
+summary(model_4)
+stargazer(model_4, type = "html", out = "resultats_model_4.doc")
+
+#Tout ce que l'on peut savoir c'est que d'avoir une opinion "Agree" plutôt que
+#"Strictement Agree" fait baisser la proba d'avoir son exam mais je ne sais pas
+#dans quelle mesure
+
+exp(model_4$coefficients)
+#ou 
+logitor(y_bin~ x1 + x2 +x3 relevel(opinion, ref="Agree"), data=mydata)
+
+```
+
+
+
+```{r}
+# Question 7 : Quelle est la probabilité que y soit égal à 1 ? (Astuce : Il n'est pas possible d'estimer la moyenne d'une variable catégorielle, mais on peut calculer la proba que y = 1 pour chaque cas, ex : Estimer la proba que y= 1 lorsque opinion = "Agree" etc)
+allmean=data.frame(x1, x2, x3, opinion= as.factor(c("Agree")))
+allmean$pred.prob=predict(logit, newdata = allmean, type="response")
+allmean=data.frame(x1, x2, x3, opinion= as.factor(c("str disag")))
+allmean$pred.prob=predict(logit, newdata = allmean, type="response")
+allmean=data.frame(x1, x2, x3, opinion= as.factor(c(" Disag")))
+allmean$pred.prob=predict(logit, newdata = allmean, type="response")
+```
+
+

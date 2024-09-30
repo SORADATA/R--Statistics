@@ -114,7 +114,9 @@ allmean$pred.prob=predict(logit, newdata = allmean, type="response")
 X1 : 2.668 lorsque X1 augmente de 1 alors cela augmente la proba de passer a une actegorie supérieur est multiplié par 2, 668% ou augmente de 2, 66 % . 
 Donc le coef est significatif 
 2- Quelles sont les proba prédit de Y ? 
-Le nombre de la ligne Mean  sont les pron prédites de chaque 
+Le nombre de la ligne Mean  sont les prob prédites de chaque 
+ml.pred =predict(ml, type="probs")
+summary(ml.predict)
 
 # Partie 3 : Var catégorielle non -Ordonnée
 

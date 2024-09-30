@@ -1,1 +1,11 @@
-https://github.com/SORADATA/R--Statistics/blob/main/Personnals-%20Projects/MaladieCardiaque_Logit_files/figure-html/unnamed-chunk-12-1.png
+# Projets académiques - R et Statistiques
+
+## Analyse de la maladie cardiaque
+
+Ce projet porte sur l'analyse des facteurs de risque de la maladie cardiaque à l'aide d'une régression logistique.
+
+### Graphique de sortie
+
+Voici le graphique représentant les résultats de l'analyse :
+
+![Graphique de régression](https://github.com/SORADATA/R--Statistics/blob/main/Personnals-%20Projects/MaladieCardiaque_Logit_files/figure-html/unnamed-chunk-12-1.png?raw=true)

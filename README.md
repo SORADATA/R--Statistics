@@ -3,10 +3,11 @@
 Ce dépôt contient des scripts R pour diverses analyses statistiques et tâches de modélisation. Voici un aperçu des projets inclus :
 
 ## Installer les packages sur R : 
-'''r
+
+```r
 install.packages(
-c("FactomineR", "Factoextra","ggplot2", "dplyr" ))
-'''
+  c("FactoMineR", "Factoshiny", "FactoInvestigate", "factoextra", "ggcorrplot","ggplot2", "dplyr"))
+```
 
 ## ACP sur les Données Universitaires
 
@@ -17,7 +18,7 @@ Analyse en Composantes Principales (ACP) examinant la proportion d'étudiants en
 ## ACP sur les Maladies Cardiaques
 
 Analyse en Composantes Principales portant sur divers facteurs liés aux maladies cardiaques.
-![1]( https://sante.gouv.fr/soins-et-maladies/maladies/maladies-cardiovasculaires-et-avc/article/maladies-cardiovasculaires)
+![](https://sante.gouv.fr/soins-et-maladies/maladies/maladies-cardiovasculaires-et-avc/article/maladies-cardiovasculaires)
 
 Ce site gouvernemental permet de vous renseigner sur la maladie cardiaque 
 

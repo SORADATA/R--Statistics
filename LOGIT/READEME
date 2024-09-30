@@ -19,3 +19,55 @@ Le modèle logit, également connu sous le nom de régression logistique, est un
 7. **Hypothèses** : Ne nécessite pas d'hypothèse de normalité des variables explicatives, contrairement à la régression linéaire.
 
 Le modèle logit est largement utilisé dans divers domaines, notamment en médecine, en marketing, en finance et en sciences sociales, pour des tâches de classification binaire et d'analyse des facteurs influençant un résultat dichotomique.
+
+
+                                         Fiche exercice 2 : Modèles logit et probit.
+Code R 
+glm(y ~ x1 + x2 + x3, family=binomial(link="logit"), data=mydata (modèle logit standard)
+polr(y ~ x1 + x2 + x3, data=mydata, Hess=TRUE) (modèle logit ordonné)
+multinom(y ~ x1 + x2 + x3, data=mydata) (modèle logit multinomial)
+stargazer(example, type="html", out="example.htm") (exp tableau de regression au propre)
+
+
+Exercice :
+
+
+Partie 1) Variable Dummy comme endogène
+
+
+1) Récupérer les données de la partie 1 sur le site « https://dss.princeton.edu/training/Panel101.dta »
+directement en ligne à partir de la commande read.dta. Installer aussi le package « foreign » et « stargazer » .
+2) Réaliser un modèle afin d’étudier l’effet de x1 et x2 sur x3. Peut-on interpréter les résultats ? Que représentent les 
+coefficients trouvés ? Même chose avec comme variable explicatives x2 et opinion et variable expliquée x3.
+3) Réaliser un modèle afin d’étudier l’effet de x1, x2, et x3 sur y_bin. Peut-on interpréter les résultats ? Que 
+représentent les coefficients trouvés ? Représenter les résultats dans un tableau propre sous word avec la fonction 
+stargazer.
+4) Les coefficients sous forme logit suivent une loi logistique, et notamment logarithmique (ln), donnant ainsi des 
+probabilités sous forme logarithmique, ce qui complique grandement leur interprétation. Trouvez une manière 
+d’interpréter les coefficients (qu’ils soient sous forme de probabilité standard, et non plus logarithmique). Les 
+représenter dans un tableau sous word avec la fonction stargazer. Vous aurez aussi besoin du package « mfx ».
+5) Toutes choses étant égales par ailleurs, (on considère les variables explicatives maintenues à leur valeur moyenne),
+quelle est la proba que y soit égal à 1 (selon le modèle de la question 3) ? Créer un objet Allmean qui répertorie 3 
+valeurs : x1, x2 et x3 à leur valeur moyenne, puis créer une nouvelle variable « pred.prob » (probabilité prédite) dans 
+cet objet Allmean (avec la fonction « predict ») qui représente la probabilité que y soit égal à 1.
+6) Estimer le modèle de la question 3 avec une nouvelle variable explicative : Opinion.
+7) Quelle est la probabilité que y soit égal à 1 ? (Astuce : Il n'est pas possible d'estimer la moyenne d'une variable 
+catégorielle, mais on peut calculer la proba que y = 1 pour chaque cas, ex : Estimer la proba que y= 1 lorsque opinion 
+= "Agree" etc)
+
+
+Partie 2) Variable catégorielle ordonnée
+
+
+1) Réaliser un modèle afin d’étudier l’effet de x1, x2, et x3 sur la variable opinion. Nommez ce modèle « m1 ». 
+Interprétez les résultats.
+2) Quelles sont les probabilités prédites de Y ? (Probabilité que Y soit dans chaque catégorie lorsque les autres 
+variables sont maintenues à leur moyenne).
+
+
+Partie 3) Variable catégorielle non ordonnée
+
+
+1) Récupérez les données sur le site https://stats.idre.ucla.edu/stat/data/hsbdemo.dta avec la fonction read.dta. 
+Nommez la telle que vous le souhaitez. Vous aurez aussi besoin du package « nnet ».
+2) Réalisez le modèle suivant : (ses ~ science + socst+ female). Interprétez les coefficients

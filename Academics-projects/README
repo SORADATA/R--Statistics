@@ -10,4 +10,15 @@ L'objectif est de mettre en pratique des méthodes statistiques et des technique
 Projets : 
 
 
-1. Analyse de régression logis
+1. Econométrie des variables qualitatives : dans le cadre de ce cours nous aborderons des concepts économétriques liésnaux variables qualitatives notamment de type 
+binaire prenant la forme (0,1) et donc un Logit-probit . 
+
+- Rappels sur la régression linéaire 
+- Modèle Logit
+- Modèle panel 
+
+Voir => => https://github.com/SORADATA/R--Statistics/tree/main/Academics-projects/Econom%C3%A9trie%20des%20var_qualitatives
+
+
+
+2. Princeton_university : Cette base de donnée nous a permit de faire une logit de type classique mais également de type ordonné et non-ordonné 

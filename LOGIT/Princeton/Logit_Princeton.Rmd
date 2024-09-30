@@ -86,3 +86,31 @@ for (op in opinions) {
 }
 
 print(results)
+
+
+
+
+```
+
+#  Partie 2 : Var catégorielle ordonnée ( juste les interpretations ) 
+
+X1 : 2.668 lorsque X1 augmente de 1 alors cela augmente la proba de passer a une actegorie supérieur est multiplié par 2, 668% ou augmente de 2, 66 % . 
+Donc le coef est significatif 
+2- Quelles sont les proba prédit de Y ? 
+Le nombre de la ligne Mean  sont les prob prédites de chaque 
+ml.pred =predict(ml, type="probs")
+summary(ml.predict)
+
+# Partie 3 : Var catégorielle non -Ordonnée
+
+                       Science           socst     femalefemale 
+acadelic : -2.168205   - 0.01620292      0.07      - 0.0216
+vocation : 4.003169    - 0.0398         -0.04013    0.0139
+
+Ce sont les coeff logit catégorielle relatifs a la catégorie de réference 
+par exple sous "science", le coef - 0.016 suggère que lorsque le score en science aug d'une unité, le coef logit pour academic par rapport à general baissera de ce moment : - 0.016. En d'autres termes, si votre socre scientifique auglente d'une unité , vos chances de rester dans la catégorie academic sont plus faibles que de rester dans la catégorie general et c'est encore plus vrai concernant vocation. 
+
+# on remet en exponentiel : 
+- Lorsque la catégorie female aug la prob de rester dans la catégorie 
+- si votre score scientifique augm d'une unité, vous etes 0.9839 fois plus susceptibles d'tere dan sla ctégorie academic plutot que d'etre dans la catégorie general (les chances 'etre dans la catgéroei acadamic sont de 1.7% plus faible que d'etre dna sla actégorie general. 
+le coef , cependant n'est pas significatif, par contre pour vocation , 0.96 , il l'est. 

@@ -94,7 +94,7 @@ stargazer(model_4, type = "html", out = "resultats_model_4.doc")
 
 exp(model_4$coefficients)
 #ou 
-logitor(y_bin~ x1 + x2 +x3 relevel(opinion, ref="Agree"), data=mydata)
+logitor(y_bin~ x1 + x2 +x3 relevel(opinion, ref="Agree"), data=mydata) # Logitor permet de mettre en Odds Ratio 
 
 ```
 
@@ -109,5 +109,16 @@ allmean$pred.prob=predict(logit, newdata = allmean, type="response")
 allmean=data.frame(x1, x2, x3, opinion= as.factor(c(" Disag")))
 allmean$pred.prob=predict(logit, newdata = allmean, type="response")
 ```
+#  Partie 2 : Var catégorielle ordonnée ( juste les interpretations ) 
+
+X1 : 2.668 lorsque X1 augmente de 1 alors cela augmente la proba de passer a une actegorie supérieur est multiplié par 2, 668% ou augmente de 2, 66 % . 
+Donc le coef est significatif 
+2- Quelles sont les proba prédit de Y ? 
+Le nombre de la ligne Mean  sont les pron prédites de chaque 
+
+# Partie 3 : Var catégorielle non -Ordonnée
+
+
+
 
 

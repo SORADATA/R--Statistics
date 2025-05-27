@@ -1,0 +1,392 @@
+---
+title: "Nuage_mot"
+author: "Moussa"
+date: "2025-05-18"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Nuage de mot
+
+Sur le tarif Douanier US sur l'impact des entreprises de la région Hauts de France 
+
+
+```{r}
+# Chargement des packages nécessaires
+
+packages <- c("tm", "SnowballC", "wordcloud", "RColorBrewer", "tidytext", "tidyverse", "readxl")
+
+```
+
+
+```{r}
+# Importation de dataset-------------
+
+library(readxl)
+
+D <- read_excel("C:/Users/sisso/OneDrive/Bureau/STAGE/BDF/Commentaires.xlsx")
+
+
+head(D)
+
+# Nettoyage du texte ------------------
+
+# Ajout d'une colonne nettoyée
+
+library(dplyr)
+library(stringr)
+library(tidyverse)
+library(tidytext)
+library(tibble)
+library(tm)
+library(RColorBrewer)
+
+text_data <- D %>%
+  mutate(text_clean = Commentaires %>%  # Cérer une new var
+           str_replace_all("[[:punct:]]", " ") %>%
+           str_replace_all("[0-9]", " ") %>%
+           str_squish())  # Elle supprime les espaces inutiles dans une chaîne de caractères.
+
+# Suppression des stopwords français ---------------
+
+stopwords_fr<-tibble(word=stopwords("fr"))
+
+# Tableau de fréquence
+words_df <- text_data %>% 
+  unnest_tokens(word, text_clean) %>% # transformer du texte en une structure 
+  anti_join(stopwords_fr, by="word") # retourner toutes les lignes du premier data frame qui n'ont pas de correspondance %>%
+  count(word, sort = TRUE)
+
+head(words_df)
+
+view(words_df)
+
+
+```
+
+
+
+
+```{r}
+# Analyse des fréquences et nuage de mots -------------------------------
+
+# Unnest tokens (unigrammes)
+
+library(wordcloud)
+words_df<-text_data %>% 
+  unnest_tokens(word, text_clean)%>%
+  anti_join(stopwords_fr, by="word") %>%
+  count(word, sort =TRUE)
+
+
+# Nuage de mots 
+
+set.seed(1234)
+wordcloud(words = words_df$word, freq =words_df$n,min.freq = 2, max.words = 30, random.order = FALSE, rot.per = 0.35,colors = brewer.pal(8,"Dark2"))
+
+```
+
+```{r}
+# Analyse des bigrammes  --------------------
+
+bigrams <- text_data %>%
+  unnest_tokens(bigram, text_clean, token = "ngrams", n = 2) %>%
+  separate(bigram, c("word1", "word2"), sep = " ") %>%
+  filter(!word1 %in% stopwords_fr$word,
+         !word2 %in% stopwords_fr$word) %>%
+  unite(bigram, word1, word2, sep = " ") %>%
+  count(bigram, sort = TRUE)
+
+
+# Visualisation des bigrammes les plus fréquents
+bigrams %>%
+  filter(n > 2) %>%
+  ggplot(aes(x = reorder(bigram, n), y = n)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +  # Permet de pivoter le graph
+  labs(title = "Bigrammes les plus fréquents", x = "Bigramme", y = "Fréquence") +
+  theme_minimal()
+
+```
+
+
+```{r}
+library(tidytext)
+library(dplyr)
+library(tm)
+
+# 1. Construction de la matrice DTM
+dtm <- text_data %>%
+  unnest_tokens(word, text_clean) %>%
+  count(document = row_number(), word) %>%
+  cast_dtm(document, word, n)
+
+# 2. Lister les mots fréquents pour choisir un mot pertinent
+freq_words <- findFreqTerms(dtm, lowfreq = 10)
+print(freq_words)
+
+# 3. Choisir un mot à tester (par exemple "impact")
+mot_a_tester <- "impact" # remplace par un mot de freq_words
+
+# 4. Chercher les associations avec un seuil bas
+associations <- findAssocs(dtm, terms = mot_a_tester, corlimit = 0.01)
+print(associations)
+
+
+# Recherche assoc pour plusieurs
+
+resultats <- lapply(freq_words[1:5], function(mot) {
+  assoc <- findAssocs(dtm, terms = mot, corlimit = 0.01)
+  list(mot = mot, associations = assoc)
+})
+
+# Afficher les résultats
+for (res in resultats) {
+  cat("\nAssociations pour le mot:", res$mot, "\n")
+  print(res$associations)
+}
+
+
+# Les ocuurences brutes 
+
+mat <- as.matrix(dtm)
+mot_a_tester <- "moment"
+docs_mot <- which(mat[, mot_a_tester] > 0)
+cooc_mot <- colSums(mat[docs_mot, ] > 0)
+cooc_mot <- sort(cooc_mot, decreasing = TRUE)
+cooc_mot[2:11] # Les 10 mots les plus cooccurrents avec "prix"
+
+
+
+library(igraph)
+
+# Matrice de cooccurrence brute
+mat <- as.matrix(dtm)
+cooc_mat <- t(mat) %*% (mat > 0)
+# On enlève la diagonale (auto-cooccurrence)
+diag(cooc_mat) <- 0
+
+# On garde les liens les plus forts
+edges <- which(cooc_mat > 2, arr.ind = TRUE) # >2 cooccurrences
+edges_df <- data.frame(
+  from = rownames(cooc_mat)[edges[,1]],
+  to = colnames(cooc_mat)[edges[,2]],
+  weight = cooc_mat[edges]
+)
+
+g <- graph_from_data_frame(edges_df, directed = FALSE)
+plot(g, vertex.size = 5, vertex.label.cex = 0.7)
+
+
+```
+
+
+```{r}
+# LDA : Latent Dicichlet Allocation pour comprendre le corpus 
+```
+
+
+
+
+```{r}
+# Analyse de sentiment 
+
+
+
+```
+
+```{r}
+
+library(tidytext)
+library(dplyr)
+library(widyr)
+
+
+
+df_tokens <- dtm %>%
+  unnest_tokens(word, text)
+
+# Calculer les cooccurrences dans chaque document
+cooc <- dtm_tokens %>%
+  pairwise_count(word, id, sort = TRUE)
+
+mot_a_tester <- "impact sur les USA"
+
+asso_impact <- cooc %>%
+  filter(item1 == mot_a_tester | item2 == mot_a_tester)
+
+print(asso_impact)
+
+
+```
+```{r}
+library(tidytext)
+library(dplyr)
+library(widyr)
+library(igraph)
+
+# 1. Construction de la matrice tidy (tokens par document)
+# text_data : data.frame avec une colonne 'text_clean' (texte) et une colonne 'document' (id unique)
+# Si tu n'as pas de colonne 'document', crée-la :
+text_data <- text_data %>%
+  mutate(document = row_number())
+
+# Tokenisation
+df_tokens <- text_data %>%
+  unnest_tokens(word, text_clean) %>%
+  filter(!is.na(word))
+
+# 2. Lister les mots fréquents (au moins 10 occurrences)
+freq_words <- df_tokens %>%
+  count(word, sort = TRUE) %>%
+  filter(n >= 10) %>%
+  pull(word)
+
+print(freq_words)
+
+# 3. Choisir un mot à tester (par exemple "impact")
+mot_a_tester <- "impact" # ou freq_words[1], etc.
+
+# 4. Calculer les cooccurrences (associations) pour un mot donné
+cooc <- df_tokens %>%
+  pairwise_count(word, document, sort = TRUE)
+
+asso_impact <- cooc %>%
+  filter(item1 == mot_a_tester | item2 == mot_a_tester) %>%
+  arrange(desc(n))
+
+cat("\nAssociations pour le mot:", mot_a_tester, "\n")
+print(head(asso_impact, 10)) # Les 10 mots les plus cooccurrents
+
+# 5. Associations pour plusieurs mots fréquents
+resultats <- lapply(freq_words[1:5], function(mot) {
+  assoc <- cooc %>%
+    filter(item1 == mot | item2 == mot) %>%
+    arrange(desc(n))
+  list(mot = mot, associations = head(assoc, 10))
+})
+
+# Afficher les résultats
+for (res in resultats) {
+  cat("\nAssociations pour le mot:", res$mot, "\n")
+  print(res$associations)
+}
+
+# 6. (Optionnel) Visualisation réseau des cooccurrences fortes
+edges_df <- cooc %>%
+  filter(n > 2) %>% # Ajuste le seuil selon la densité de ton corpus
+  select(from = item1, to = item2, weight = n)
+
+g <- graph_from_data_frame(edges_df, directed = FALSE)
+plot(g, vertex.size = 5, vertex.label.cex = 0.7)
+
+```
+```{r}
+library(tidytext) # Crée un mot par ligne 
+library(dplyr) " Manip des dataframes (filtres , tri etc...)"
+library(widyr) # Afin de calculer des relations entres paires d'élements 
+
+
+# 1. Prépare les tokens (comme avant en ft c'est sont les données netoyées )
+text_data <- text_data %>%
+  mutate(document = row_number())
+
+df_tokens <- text_data %>%
+  unnest_tokens(word, text_clean) %>% # Qui va stocker les token s dans la base text_clean
+  filter(!is.na(word))
+
+# 2. Calcul des corrélations entre mots
+cor_mots <- df_tokens %>%
+  pairwise_cor(word, document, sort = TRUE) # Parwise permet de Calculer la corrélation de présence entre toutes les paires d’éléments dans un jeu de données 
+
+# 3. Pour un mot donné, obtenir les mots les plus corrélés
+mot_a_tester <- "guerre"
+asso_impact_cor <- cor_mots %>%
+  filter(item1 == mot_a_tester | item2 == mot_a_tester) %>%
+  arrange(desc(correlation))
+
+cat("\nCorrélations pour le mot:", mot_a_tester, "\n") # Sert à afficher du texte brut dans la console, sans formatage excessif 
+print(head(asso_impact_cor, 10)) # Les 10 mots les plus corrélés
+
+# 4. Pour plusieurs mots fréquents
+freq_words <- df_tokens %>%
+  count(word, sort = TRUE) %>%
+  filter(n >= 10) %>%
+  pull(word)
+
+resultats_cor <- lapply(freq_words[1:5], function(mot) {
+  assoc <- cor_mots %>%
+    filter(item1 == mot | item2 == mot) %>%
+    arrange(desc(correlation))
+  list(mot = mot, associations = head(assoc, 10))
+})
+
+for (res in resultats_cor) {
+  cat("\nCorrélations pour le mot:", res$mot, "\n")
+  print(res$associations)
+}
+
+```
+```{r}
+
+#  Afin de faire le graph avec les mots les plus forts 
+
+
+
+library(igraph)
+library(ggraph)
+
+# On sélectionne les liens les plus forts pour le mot d'intérêt
+edges <- top_corr %>%
+  select(from = mot_a_tester, to = mot_associe, weight = correlation)
+
+# Création du graphe
+g <- graph_from_data_frame(edges, directed = FALSE)
+
+# Visualisation avec ggraph
+ggraph(g, layout = "fr") +
+  geom_edge_link(aes(width = weight), color = "grey60") +
+  geom_node_point(size = 5, color = "steelblue") +
+  geom_node_text(aes(label = name), vjust = 1.5, size = 5) +
+  labs(
+    title = paste("Graphe des corrélations avec le mot", mot_a_tester)
+  ) +
+  theme_void()
+
+```
+```{r}
+library(ggplot2)
+
+# Prendre les 10 mots les plus corrélés avec le mot d'intérêt
+top_corr <- head(asso_impact_cor, 10)
+
+# Créer une colonne 'mot_associe' pour afficher l'autre mot de la paire
+top_corr <- top_corr %>%
+  mutate(mot_associe = ifelse(item1 == mot_a_tester, item2, item1))
+
+ggplot(top_corr, aes(x = reorder(mot_associe, correlation), y = correlation)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
+  labs(
+    title = paste("Corrélations les plus fortes avec le mot", mot_a_tester),
+    x = "Mot associé",
+    y = "Corrélation"
+  ) +
+  theme_minimal()
+
+```
+
+
+
+
+
+
+
+
+
+
+
+

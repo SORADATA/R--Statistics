@@ -1,0 +1,461 @@
+#############################################################################################
+# Porjet conjoncture économique des marchés financiers 
+#############################################################################################
+
+
+
+# 1. Importation des données 
+
+library(readxl)
+Data <- read_excel("C:/Users/sisso/OneDrive/Bureau/Master EA UL/M2/Analyse conjoncturelle marché fi/Projet/Data.xlsx", 
+                   sheet = "Data")
+head(Data)
+
+
+
+### Stats descriptives 
+
+
+# Libraries nécessaires
+library(dplyr)
+library(moments)
+library(tidyr)
+library(knitr)
+
+# Conversion date pour le format "2017M01"
+Data <- Data %>%
+  mutate(
+    Year = as.numeric(substr(Time, 1, 4)),
+    Month = as.numeric(substr(Time, 6, 7)),
+    Date = as.Date(paste0(Year, "-", Month, "-01"))
+  )
+
+# Découpage en période
+Data <- Data %>%
+  mutate(
+    Periode = case_when(
+      Date < as.Date("2018-06-01") ~ "Avant crise",
+      Dummy_crise == 1             ~ "Pendant crise",
+      Date > as.Date("2019-01-01") ~ "Après crise"
+    )
+  )
+
+# Variables macro/financières à analyser
+vars <- c("IPC", "USD/TRY", "CDS", "Taux de chomage", "Taux directeur(%)", "SP500", "DAX", "Hang Seng")
+
+# Fonction stats par sous-période
+stats_period <- function(df, variables) {
+  summarise(df,
+            across(all_of(variables),
+                   list(
+                     mean = ~mean(., na.rm=TRUE),
+                     median = ~median(., na.rm=TRUE),
+                     sd = ~sd(., na.rm=TRUE),
+                     min = ~min(., na.rm=TRUE),
+                     max = ~max(., na.rm=TRUE),
+                     skew = ~skewness(., na.rm=TRUE),
+                     kurt = ~kurtosis(., na.rm=TRUE)
+                   ),
+                   .names = "{.col}_{.fn}"
+            )
+  )
+}
+
+# Création du tableau final
+stats_desc <- Data %>%
+  filter(!is.na(Periode)) %>%
+  group_by(Periode) %>%
+  do(stats_period(., vars)) %>%
+  pivot_longer(
+    -Periode,
+    names_to = c("Variable", "Stat"),
+    names_sep = "_"
+  ) %>%
+  pivot_wider(names_from = Stat, values_from = value) %>%
+  arrange(factor(Periode, levels = c("Avant crise", "Pendant crise", "Après crise")), Variable)
+
+# Affichage joli tableau (optionnel)
+kable(stats_desc, digits=2, caption="Statistiques descriptives par période")
+
+# Export csv (optionnel)
+write.csv(stats_desc, "stats_descriptives_par_periode.csv", row.names=FALSE)
+
+
+library(kableExtra)
+
+# Création d’un beau tableau LaTeX
+latex_table <- kable(
+  stats_desc,
+  format = "latex",
+  booktabs = TRUE,
+  caption = "Statistiques descriptives par période (avant, pendant, après crise)",
+  digits = 2,
+  longtable = TRUE
+) %>%
+  kable_styling(latex_options = c("striped", "hold_position"))
+
+# Sauvegarde dans un fichier .tex
+writeLines(latex_table, "stats_descriptives_par_periode.tex")
+
+
+
+
+### Graphiques :
+
+
+######## Code latex
+plot(Data$Date, Data$`Taux de chomage`, type="l", col="red", 
+     ylab="Taux de chômage (%)", xlab="Date", lwd=2,
+     main="Inflation vs. Taux de Chomage (2017-2019)")
+
+# Ajoute la zone crise juste après le plot principal
+rect(xleft=as.Date("2018-06-01"), xright=as.Date("2019-01-01"), ybottom=par("usr")[3], ytop=par("usr")[4], col=rgb(0,0,1,0.2), border=NA)
+
+par(new=TRUE)
+plot(Data$Date, Data$IPC, type="l", col="darkgreen", lty=2, lwd=2,
+     axes=FALSE, xlab="", ylab="")
+axis(side=4)
+mtext("Inflation (YoY, %)", side=4, line=3)
+
+legend("topright", legend=c("Taux de chomage", "INFLATION"), 
+       col=c("red", "darkgreen"), lty=c(1,2), lwd=2)
+
+
+# Graphique USD/TRY et le CDS turque
+
+plot(Data$Date, Data$`USD/TRY`, type="l", col="red", 
+     ylab="Taux de Change (USD/TRY)", xlab="Date", lwd=2,
+     main="USD/TRY vs. CDS Turquie (2017-2019)")
+
+rect(xleft=as.Date("2018-06-01"), xright=as.Date("2019-01-01"), 
+     ybottom=par("usr")[3], ytop=par("usr")[4], 
+     col=rgb(0,0,1,0.2), border=NA)
+
+par(new=TRUE)
+plot(Data$Date, Data$CDS, type="l", col="blue", lty=2, lwd=2,
+     axes=FALSE, xlab="", ylab="")
+axis(side=4)
+mtext("CDS Turquie (bp)", side=4, line=3)
+
+legend("topleft", legend=c("USD/TRY", "CDS Turquie"), 
+       col=c("red", "blue"), lty=c(1,2), lwd=2)
+
+
+# Graphique taux directeur 
+
+plot(Data$Date, Data$`USD/TRY`, type="l", col="red",
+     ylab="Taux de Change (USD/TRY)", xlab="Date", lwd=2,
+     main="USD/TRY vs. Taux directeur (2017-2019)")
+rect(xleft=as.Date("2018-06-01"), xright=as.Date("2019-01-01"), ybottom=par("usr")[3], ytop=par("usr")[4], col=rgb(0,0,1,0.2), border=NA)
+par(new=TRUE)
+plot(Data$Date, Data$`Taux directeur(%)`, type="l", col="darkgreen", lty=2, lwd=2, axes=FALSE, xlab="", ylab="")
+axis(side=4)
+mtext("Taux directeur (%)", side=4, line=3)
+legend("topleft", legend=c("USD/TRY", "Taux directeur"), col=c("red", "darkgreen"), lty=c(1,2), lwd=2)
+
+
+# Graphique Taux Directeur vs. Inflation (Le dilemme de la politique)
+
+plot(Data$Date, Data$`Taux directeur(%)`, type="l", col="red", 
+     ylab="Taux directeur (%)", xlab="Date", lwd=2,
+     main="Le dilemme de la politique monétaire (2017-2019)")
+
+# Ajoute la zone crise
+rect(xleft=as.Date("2018-06-01"), xright=as.Date("2019-01-01"), 
+     ybottom=par("usr")[3], ytop=par("usr")[4], 
+     col=rgb(0,0,1,0.2), border=NA)
+
+par(new=TRUE)
+plot(Data$Date, Data$IPC, type="l", col="darkgreen", lty=2, lwd=2, 
+     axes=FALSE, xlab="", ylab="")
+axis(side=4)
+mtext("Inflation (YoY, %)", side=4, line=3)
+
+legend("topleft", legend=c("Taux directeur", "Inflation"), 
+       col=c("red", "darkgreen"), lty=c(1,2), lwd=2)
+
+# Graphique USD/TRY vs. SP500 (Découplage international)
+
+plot(Data$Date, Data$`USD/TRY`, type="l", col="red", 
+     ylab="Taux de Change (USD/TRY)", xlab="Date", lwd=2,
+     main="Découplage : Crise turque vs. Marché mondial (2017-2019)")
+
+# Ajoute la zone crise
+rect(xleft=as.Date("2018-06-01"), xright=as.Date("2019-01-01"), 
+     ybottom=par("usr")[3], ytop=par("usr")[4], 
+     col=rgb(0,0,1,0.2), border=NA)
+
+par(new=TRUE)
+# Assurez-vous que Data$SP500 existe et est à la même fréquence
+plot(Data$Date, Data$SP500, type="l", col="blue", lty=2, lwd=2, 
+     axes=FALSE, xlab="", ylab="")
+axis(side=4)
+mtext("SP500 (Indice)", side=4, line=3)
+
+legend("topleft", legend=c("USD/TRY (Stress TUR)", "SP500 (Global)"), 
+       col=c("red", "blue"), lty=c(1,2), lwd=2)
+
+
+#### Les variables macro 
+
+
+# Taux de change USD/TRY (dynamique de la monnaie, indicateur de crise)
+
+# IPC (Indice des prix à la consommation / inflation) (pression sur la monnaie, pouvoir d’achat)
+
+# Taux de chômage (contexte social, impact récessif)
+
+# Taux directeur (%) et Taux directeur différentiel (%) (politique monétaire, taux d’intérêt réel)
+
+# Spread sur les taux (prime de risque pays)
+
+
+
+### Variables financières / de risque
+
+# CDS (Credit Default Swap) (risque souverain perçu par les marchés)
+
+# Indices internationaux (SP500, DAX, Hang Seng) (pour mesurer l’effet des chocs externes et la transmission mondiale)
+
+
+
+####### Modèle de reg : Variation USD / TRY = alpha + Beta IPC
+
+# Installe le package si besoin
+#install.packages("stargazer")
+library(stargazer)
+
+# Crée le tableau LaTeX de ta régression
+stargazer(Modreg, type = "latex", 
+          title = "Résultats du modèle de régression USD/TRY", 
+          align = TRUE, 
+          out = "table_reg.tex") # Sauvegarde dans un fichier, ou retire l'option 'out' pour juste afficher dans la console
+
+
+ModregUS <- lm(Data$`USD/TRY` ~ Data$Dummy_crise+ Data$IPC + Data$CDS + Data$`Taux directeur(%)` + Data$SP500 + Data$DAX + Data$`Hang Seng`, data = Data)
+
+summary(ModregUS)
+
+
+
+####### Création de  la variable dummy 
+
+# Exemple pour colonne 'Time' au format "YYYYMM" ou "YYYY-MM"
+Data$Dummy_crise <- ifelse(Data$Time >= "2018M06" & Data$Time <= "2019M01", 1, 0)
+
+table(Data$Dummy_crise)
+
+
+
+# Impact sur l'inflation 
+
+Modele_inflation <- lm(IPC ~ Dummy_crise + Data$`USD/TRY` + CDS, data = Data)
+summary(Modele_inflation)
+# Interprète le coef de Dummy_crise : effet moyen de la crise sur l’inflation
+
+# Impact sur le chomage
+
+Modele_chomage <- lm(Data$`Taux de chomage`~ Dummy_crise + Data$`USD/TRY` + CDS, data = Data)
+summary(Modele_chomage)
+
+# Ici, Dummy_crise mesure l’impact structurel de la crise sur le taux de chômage
+
+# Impact sur le SP500
+
+Modele_SP500 <- lm(Data$SP500 ~ Dummy_crise + Data$`USD/TRY` + CDS + DAX + Data$`Hang Seng`, data = Data)
+summary(Modele_SP500)
+# Permet de voir si la crise turque a eu un effet perceptible sur le SP500
+
+# Impact sur le Hang Seng
+
+Modele_Hang <- lm(Data$`Hang Seng` ~ Dummy_crise + Data$`USD/TRY` + CDS + SP500 + DAX, data = Data)
+summary(Modele_Hang)
+# Teste l’effet de la crise sur l’indice asiatique
+
+# Impact sur le DAX
+
+Modele_Dax <- lm(DAX ~ Dummy_crise + Data$`USD/TRY` + CDS + SP500 + Data$`Hang Seng`, data = Data)
+summary(Modele_Dax)
+# Teste l’effet de la crise sur l’indice asiatique
+
+
+
+######### Latex
+
+
+stargazer(ModregUS, type = "latex", title="USD/TRY", out="Table_USDTRY.tex")
+stargazer(Modele_inflation, type = "latex", title="Inflation", out="Table_Inflation.tex")
+stargazer(Modele_chomage, type = "latex", title="Chomage", out="Table_Chomage.tex")
+stargazer(Modele_SP500, type = "latex", title="SP500", out="Table_SP500.tex")
+stargazer(Modele_Hang, type = "latex", title="Hang Seng", out="Table_Hang.tex")
+stargazer(Modele_Dax, type = "latex", title="DAX", out="Table_DAX.tex")
+
+
+
+#################### Test student ######################
+
+inflation_crise <- subset(Data, Dummy_crise == 1)$IPC
+inflation_hors_crise <- subset(Data, Dummy_crise == 0)$IPC
+
+# Applique le test
+t.test(inflation_crise, inflation_hors_crise)
+
+
+
+chomage_crise <- subset(Data, Dummy_crise == 1)$`Taux de chomage`
+chomage_hors_crise <- subset(Data, Dummy_crise == 0)$`Taux de chomage`
+
+# Applique le test
+t.test(chomage_crise, chomage_hors_crise)
+
+
+
+t.test(Data$SP500[Data$Dummy_crise== 1], Data$SP500[Data$Dummy_crise == 0])
+t.test(Data$DAX[Data$Dummy_crise == 1], Data$DAX[ Data$Dummy_crise== 0])
+t.test(Data$`Hang Seng`[Data$Dummy_crise == 1], Data$`Hang Seng`[Data$Dummy_crise == 0])
+
+t.test(Data$`Taux directeur(%)`[Data$Dummy_crise==1], Data$`Taux directeur(%)`[Data$Dummy_crise==0])
+t.test(Data$CDS[Data$Dummy_crise==1], Data$CDS[Data$Dummy_crise==0])
+#t.test(Data$`Balan`[Data$Dummy_crise==1], Data$`Balance courante`[Data$Dummy_crise==0])
+
+
+
+
+# Tester la stationnarité avec adf.test (package tseries) avant de différencier.
+
+
+# Installer le package si besoin
+#install.packages("tseries")
+library(tseries)
+
+# Tester la stationnarité pour chaque variable clé
+adf.test(Data$IPC, alternative="stationary")         # Inflation
+adf.test(Data$`USD/TRY`, alternative="stationary")   # Taux de change USD/TRY
+adf.test(Data$CDS, alternative="stationary")         # CDS souverain
+adf.test(Data$`Taux de chomage`, alternative="stationary") # Chômage
+adf.test(Data$`Taux directeur(%)`, alternative="stationary") # Taux directeur
+adf.test(Data$SP500, alternative="stationary") # SP500
+adf.test(Data$DAX, alternative="stationary") # Taux directeur
+adf.test(Data$`Hang Seng`, alternative="stationary") # Taux directeur
+
+# Interprétation de la p-value :
+# Si p-value < 0.05, la série est stationnaire. Sinon, elle ne l’est pas et il faut la différencier.
+
+
+
+
+#Faire une analyse de causalité de Granger (fonction causality() sur l’objet VAR).
+
+#Récupérer les résidus pour des tests de normalité, autocorrélation.
+
+# Afficher les impulsions/réponses (irf(var_model)), décomposition de variance (fevd(var_model)).
+
+
+################# Modélisation var
+library(vars)
+
+Y <- data.frame(
+  d_inflation = diff(Data$IPC),
+  d_usdtry = diff(Data$`USD/TRY`),
+  d_cds = diff(Data$CDS)
+)
+
+# Choix du lag 
+
+lags <- VARselect(Y, lag.max = 4, type = "const")
+lags$criteria
+
+var_model <- VAR(Y, p=1, type="const")
+
+summary(var_model)
+
+
+# Test d'autocorrélation 
+
+# Test d’autocorrélation des résidus du VAR (Ljung-Box)
+residus <- resid(var_model)
+
+for (nom_var in colnames(residus)) {
+  cat("\nAutocorrélation des résidus pour ", nom_var, ":\n")
+  print(Box.test(residus[, nom_var], lag = 10, type = "Ljung-Box"))
+}
+
+# Interprétation :
+# p-value > 0.05 : pas d'autocorrélation → modèle OK
+# p-value < 0.05 : autocorrélation détectée → attention, peut-être revoir ton VAR !
+
+
+# Test de stabilité du model 
+
+# Afficher les racines du modèle
+mod_stab <- stability(var_model)
+summary(mod_stab)
+# Toutes les valeurs doivent être < 1 pour assurer la stabilité dynamique
+
+plot(mod_stab)
+
+summary(var_model)$roots
+plot(Mod(summary(var_model)$roots), 
+     main="Modulus of VAR Characteristic Roots",
+     ylab="Modulus",
+     xlab="Root Number",
+     pch=19)
+abline(h=1, col="red", lwd=2, lty=2) # La ligne rouge montre la limite de stabilité
+
+# Toutes les valeurs doivent être < 1 pour assurer la stabilité dynamique
+
+# Tu peux également regarder summary(var_model)$roots : toutes doivent être < 1
+
+
+# Test de Granger
+
+# Test de causalité de Granger pour chaque variable prise comme "cause"
+library(vars)
+
+for (nom_var in colnames(Y)) {
+  cat("\nTest de causalité de Granger pour ", nom_var, ":\n")
+  print(causality(var_model, cause = nom_var)$Granger)
+}
+
+# Interprétation :
+# p-value < 0.05 : la variable "cause" exerce une causalité Granger significative sur le système.
+# p-value > 0.05 : pas de causalité Granger détectée.
+
+
+
+# Fonction de reponse 
+
+# Calculer et afficher toutes les IRF possibles
+for (impulse_var in colnames(Y)) {
+  for (response_var in colnames(Y)) {
+    cat("\nIRF : Choc sur", impulse_var, "→ Réponse de", response_var, "\n")
+    irf_res <- irf(var_model, impulse = impulse_var, response = response_var,
+                   n.ahead = 10, boot = TRUE)
+    plot(irf_res)
+  }
+}
+
+
+
+
+# Analyse de la décomposition de la variance
+
+# Décomposition de la variance des erreurs de prévision (FEVD)
+# 1. (RE)DÉFINIR Y avec seulement 3 variables
+Y <- data.frame(
+  d_inflation = diff(Data$IPC),
+  d_usdtry = diff(Data$`USD/TRY`),
+  d_cds = diff(Data$CDS)
+)
+
+# 2. (RE)ESTIMER le bon modèle VAR(1)
+var_model <- VAR(Y, p=1, type="const")
+
+# 3. (RE)CALCULER le FEVD sur ce NOUVEAU var_model
+fevd_res <- fevd(var_model, n.ahead = 10)
+
+# 4. AFFICHER le nouveau résultat
+print(fevd_res)
+
+
+
